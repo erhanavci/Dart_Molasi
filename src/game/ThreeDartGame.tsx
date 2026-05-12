@@ -379,7 +379,7 @@ function addHitMark(marks: THREE.Group, throwResult: DartThrow) {
 }
 
 function disposeObject(object: THREE.Object3D) {
-  object.traverse((child) => {
+  object.traverse((child: THREE.Object3D) => {
     const mesh = child as THREE.Mesh;
     mesh.geometry?.dispose();
     const material = mesh.material;
