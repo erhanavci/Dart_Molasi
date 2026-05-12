@@ -2,10 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { bonusLabel, createBonusTarget, shouldRefreshBonus } from "../game/BonusSystem";
 import { nextCombo } from "../game/ComboSystem";
 import { resultTitles } from "../game/Effects";
-import { createPlayer, updateAccuracy } from "../game/GameState";
+import { createPlayer, defaultPlayers, updateAccuracy } from "../game/GameState";
 import { GAME_MODES } from "../game/GameModes";
 import { maybeCreatePowerUp, prunePowerUps } from "../game/PowerUps";
-import type { ActivePowerUp, BonusTarget, DartThrow, GameMode, GameResult, LeaderboardEntry, PlayerState } from "../types/game";
+import type { ActivePowerUp, BonusTarget, DartThrow, GameMode, GameResult, LeaderboardEntry, PlayerProfile, PlayerState } from "../types/game";
 import { randomItem, uid } from "../utils/random";
 
 export type GamePhase = "playing" | "betweenTurns" | "finished";
@@ -19,13 +19,20 @@ export interface GameEvent {
 interface UseGameStateArgs {
   mode: GameMode;
   playerName: string;
+  playerProfiles?: PlayerProfile[];
   onSaveScore: (entry: LeaderboardEntry) => void;
 }
 
-export function useGameState({ mode, playerName, onSaveScore }: UseGameStateArgs) {
+export function useGameState({ mode, playerName, playerProfiles, onSaveScore }: UseGameStateArgs) {
   const config = GAME_MODES[mode];
+  const profiles = playerProfiles && playerProfiles.length > 0 ? playerProfiles : defaultPlayers;
   const [players, setPlayers] = useState<PlayerState[]>(() =>
-    mode === "officeDuel" ? [createPlayer(playerName, mode, "Oyuncu 1"), createPlayer(playerName, mode, "Oyuncu 2")] : [createPlayer(playerName, mode)]
+    mode === "officeDuel"
+      ? [
+          createPlayer(profiles[0]?.name ?? "Oyuncu 1", mode, profiles[0]?.name ?? "Oyuncu 1", profiles[0]?.avatar),
+          createPlayer(profiles[1]?.name ?? "Oyuncu 2", mode, profiles[1]?.name ?? "Oyuncu 2", profiles[1]?.avatar)
+        ]
+      : [createPlayer(playerName, mode, profiles[0]?.name ?? playerName, profiles[0]?.avatar)]
   );
   const [activePlayer, setActivePlayer] = useState(0);
   const [turnDarts, setTurnDarts] = useState(0);

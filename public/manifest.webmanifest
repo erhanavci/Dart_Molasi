@@ -1,0 +1,29 @@
+{
+  "name": "Dart Molası",
+  "short_name": "Dart Molası",
+  "description": "10 dakikalık ofis rekabeti için arcade dart oyunu.",
+  "lang": "tr-TR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#101523",
+  "theme_color": "#101523",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Bull Rush",
+      "short_name": "Bull Rush",
+      "url": "/?mode=bullRush",
+      "description": "90 saniyelik hızlı skor modu"
+    }
+  ]
+}

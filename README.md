@@ -12,8 +12,15 @@ npm run dev
 ## Özellikler
 
 - React + Vite + TypeScript
-- PixiJS ile çizilen dart tahtası
+- PixiJS skor altyapısı ve Three.js ile 3D dart sahnesi
 - Hızlı 201, Bull Rush, Ofis Düellosu ve Patron Geliyor modları
 - Hareketli Bullseye, parlayan double/triple hedefleri, kombo ve güçlendirmeler
 - LocalStorage tabanlı skor tablosu ve ayarlar
+- PWA manifest ve service worker
+- Avatar/oyuncu profilleri
 - Responsive, touch ve mouse destekli Türkçe arayüz
+
+## Yayınlama
+
+Vercel veya Netlify üzerinde `npm run build` komutu ve `dist` çıkış klasörü ile yayınlanabilir.
+PWA desteği üretim build'inde aktifleşir; kullanıcı mobil tarayıcıdan ana ekrana ekleyebilir.

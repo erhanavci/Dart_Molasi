@@ -8,20 +8,21 @@ import ModeSelect from "../components/ModeSelect";
 import ResultScreen from "../components/ResultScreen";
 import Settings from "../components/Settings";
 import Splash from "../components/Splash";
-import { defaultSettings } from "../game/GameState";
+import { defaultSettings, normalizeSettings } from "../game/GameState";
 import { GAME_MODES } from "../game/GameModes";
-import PixiGame from "../game/PixiGame";
+import ThreeDartGame from "../game/ThreeDartGame";
 import { useGameState } from "../hooks/useGameState";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-import type { GameMode, GameResult, LeaderboardEntry } from "../types/game";
+import type { GameMode, GameResult, LeaderboardEntry, PlayerProfile } from "../types/game";
 
 type Screen = "splash" | "menu" | "modes" | "game" | "result" | "leaderboard" | "howto" | "settings";
 
 export default function App() {
   const [settings, setSettings] = useLocalStorage("dart-molasi-settings", defaultSettings);
+  const safeSettings = useMemo(() => normalizeSettings(settings), [settings]);
   const [leaderboard, setLeaderboard] = useLocalStorage<LeaderboardEntry[]>("dart-molasi-leaderboard", []);
   const [screen, setScreen] = useState<Screen>("splash");
-  const [mode, setMode] = useState<GameMode>(settings.defaultMode);
+  const [mode, setMode] = useState<GameMode>(safeSettings.defaultMode);
   const [gameKey, setGameKey] = useState(0);
   const [power, setPower] = useState(0);
   const [charging, setCharging] = useState(false);
@@ -59,7 +60,7 @@ export default function App() {
       {screen === "splash" && <Splash onStart={() => setScreen("menu")} />}
       {screen === "menu" && (
         <MainMenu
-          onStart={() => startMode(settings.defaultMode)}
+          onStart={() => startMode(safeSettings.defaultMode)}
           onModes={() => setScreen("modes")}
           onLeaderboard={() => setScreen("leaderboard")}
           onHowTo={() => setScreen("howto")}
@@ -69,12 +70,13 @@ export default function App() {
       {screen === "modes" && <ModeSelect onSelect={startMode} onBack={() => setScreen("menu")} />}
       {screen === "leaderboard" && <Leaderboard entries={sortedLeaderboard} onClear={() => setLeaderboard([])} onBack={() => setScreen("menu")} />}
       {screen === "howto" && <HowToPlay onBack={() => setScreen("menu")} />}
-      {screen === "settings" && <Settings settings={settings} onChange={setSettings} onBack={() => setScreen("menu")} />}
+      {screen === "settings" && <Settings settings={safeSettings} onChange={setSettings} onBack={() => setScreen("menu")} />}
       {screen === "game" && (
         <GameView
           key={gameKey}
           mode={mode}
-          settingsPlayerName={settings.playerName}
+          settingsPlayerName={safeSettings.playerName}
+          playerProfiles={safeSettings.players}
           onSaveScore={saveScore}
           onResult={(result) => {
             setLastResult(result);
@@ -108,6 +110,7 @@ export default function App() {
 interface GameViewProps {
   mode: GameMode;
   settingsPlayerName: string;
+  playerProfiles: PlayerProfile[];
   onSaveScore: (entry: LeaderboardEntry) => void;
   onResult: (result: GameResult) => void;
   onMenu: () => void;
@@ -122,6 +125,7 @@ interface GameViewProps {
 function GameView({
   mode,
   settingsPlayerName,
+  playerProfiles,
   onSaveScore,
   onResult,
   onMenu,
@@ -132,7 +136,7 @@ function GameView({
   onThrowButton,
   onPowerChange
 }: GameViewProps) {
-  const game = useGameState({ mode, playerName: settingsPlayerName, onSaveScore });
+  const game = useGameState({ mode, playerName: settingsPlayerName, playerProfiles, onSaveScore });
   const currentPlayer = game.players[game.activePlayer];
   const dartsLeft = Math.max(0, (game.suddenDeath ? 1 : GAME_MODES[mode].dartsPerTurn) - game.turnDarts);
 
@@ -168,7 +172,7 @@ function GameView({
       </div>
       <div className="order-1 flex min-h-[520px] flex-col items-center justify-center xl:order-2">
         <div className="relative w-full">
-          <PixiGame
+          <ThreeDartGame
             bonusTarget={game.bonusTarget}
             comboMultiplier={currentPlayer.combo}
             bullOffset={game.bullOffset}

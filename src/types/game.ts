@@ -17,6 +17,7 @@ export interface DartThrow {
 
 export interface PlayerState {
   name: string;
+  avatar?: string;
   score: number;
   remainingScore?: number;
   dartsThrown: number;
@@ -38,8 +39,15 @@ export interface LeaderboardEntry {
   accuracy: number;
 }
 
+export interface PlayerProfile {
+  id: string;
+  name: string;
+  avatar: string;
+}
+
 export interface SettingsState {
   playerName: string;
+  players: PlayerProfile[];
   defaultMode: GameMode;
   sound: boolean;
   effects: boolean;

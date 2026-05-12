@@ -49,7 +49,7 @@ export default function GameHUD({
     <Card className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Metric label="Mod" value={modeTitle} />
-        <Metric label="Oyuncu" value={player.name} />
+        <Metric label="Oyuncu" value={`${player.avatar ?? "☕"} ${player.name}`} />
         <Metric label="Skor" value={score} pulse />
         <Metric label="Süre" value={showTimer ? formatTime(timeLeft) : "Tur oyunu"} />
       </div>
@@ -89,10 +89,10 @@ export default function GameHUD({
         </div>
       )}
       <div className="flex flex-wrap gap-2">
-        <Button icon={<Send size={17} />} onClick={onThrowButton} disabled={phase !== "playing"}>At</Button>
-        <Button variant="secondary" icon={<StepForward size={17} />} onClick={onNextTurn} disabled={phase !== "betweenTurns"}>Sonraki Tur</Button>
-        <Button variant="secondary" icon={<RotateCcw size={17} />} onClick={onRestart}>Tekrar Oyna</Button>
-        <Button variant="ghost" icon={<Home size={17} />} onClick={onMenu}>Menüye Dön</Button>
+        <Button icon={<Send size={19} />} onClick={onThrowButton} disabled={phase !== "playing"} className="w-12 px-0" aria-label="At" title="At" />
+        <Button variant="secondary" icon={<StepForward size={19} />} onClick={onNextTurn} disabled={phase !== "betweenTurns"} className="w-12 px-0" aria-label="Sonraki Tur" title="Sonraki Tur" />
+        <Button variant="secondary" icon={<RotateCcw size={19} />} onClick={onRestart} className="w-12 px-0" aria-label="Tekrar Oyna" title="Tekrar Oyna" />
+        <Button variant="ghost" icon={<Home size={19} />} onClick={onMenu} className="w-12 px-0" aria-label="Menüye Dön" title="Menüye Dön" />
       </div>
     </Card>
   );
