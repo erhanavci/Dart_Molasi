@@ -24,17 +24,17 @@ type GraphicKey =
 
 const assetFiles: Record<GraphicKey, string> = {
   logo: "logo",
-  blueDart: "blue-dart",
-  redDart: "red-dart",
-  greenDart: "green-dart",
+  blueDart: "dart-blue",
+  redDart: "dart-red",
+  greenDart: "dart-green",
   coffee: "coffee",
   focus: "focus",
   meeting: "meeting",
   postit: "postit",
-  playButton: "play-button",
-  modeButton: "mode-button",
-  replayButton: "replay-button",
-  homeButton: "home-button",
+  playButton: "btn-play",
+  modeButton: "btn-mode",
+  replayButton: "btn-replay",
+  homeButton: "btn-home",
   bullseyePop: "bullseye-pop",
   combo2: "combo2",
   combo3: "combo3",
@@ -57,7 +57,7 @@ export default function GraphicAsset({ name, className = "", label }: GraphicAss
   return (
     <img
       className={`inline-block max-w-full select-none object-contain align-middle ${className}`}
-      src={`/assets/ui/${assetFiles[name]}.png`}
+      src={`/assets/game-ui/${assetFiles[name]}.png`}
       alt={label ?? ""}
       aria-hidden={label ? undefined : true}
       draggable={false}
