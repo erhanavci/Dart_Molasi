@@ -10,7 +10,7 @@ import Settings from "../components/Settings";
 import Splash from "../components/Splash";
 import { defaultSettings, normalizeSettings } from "../game/GameState";
 import { GAME_MODES } from "../game/GameModes";
-import ThreeDartGame from "../game/ThreeDartGame";
+import ArcadeDartGame from "../game/ArcadeDartGame";
 import { useGameState } from "../hooks/useGameState";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import type { GameMode, GameResult, LeaderboardEntry, PlayerProfile } from "../types/game";
@@ -172,7 +172,7 @@ function GameView({
       </div>
       <div className="order-1 flex min-h-[520px] flex-col items-center justify-center xl:order-2">
         <div className="relative w-full">
-          <ThreeDartGame
+          <ArcadeDartGame
             bonusTarget={game.bonusTarget}
             comboMultiplier={currentPlayer.combo}
             bullOffset={game.bullOffset}
