@@ -3,6 +3,7 @@ import type { ActivePowerUp, PlayerState } from "../types/game";
 import { formatTime } from "../utils/formatters";
 import Button from "./Button";
 import Card from "./Card";
+import GraphicAsset from "./GraphicAsset";
 
 interface GameHUDProps {
   modeTitle: string;
@@ -47,6 +48,19 @@ export default function GameHUD({
 
   return (
     <Card className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div className="rounded-xl bg-slate-950/40 p-3">
+          <div className="text-xs font-black uppercase text-slate-400">Skor Paneli</div>
+          <div className="mt-1 flex items-center gap-3">
+            <GraphicAsset name="scorePanel" className="w-28 shrink-0" />
+            <div>
+              <div className="text-3xl font-black text-cyan-100">{score}</div>
+              <div className="text-xs font-bold text-slate-400">{modeTitle}</div>
+            </div>
+          </div>
+        </div>
+        {combo > 1 && <GraphicAsset name={combo >= 3 ? "combo3" : "combo2"} className="mx-auto w-36" />}
+      </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Metric label="Mod" value={modeTitle} />
         <Metric label="Oyuncu" value={`${player.avatar ?? "☕"} ${player.name}`} />
@@ -79,6 +93,7 @@ export default function GameHUD({
       </div>
       {showBossAlarm && (
         <div className="rounded-xl border border-rose-400/30 bg-rose-950/25 p-3">
+          <GraphicAsset name="bossBar" className="mb-2 w-full max-w-xs" />
           <div className="mb-2 flex justify-between text-sm font-black">
             <span>Patron Alarmı</span>
             <span>{Math.round(bossAlarm)}%</span>

@@ -3,6 +3,7 @@ import { GAME_MODES, modeOrder } from "../game/GameModes";
 import type { GameMode } from "../types/game";
 import Button from "./Button";
 import Card from "./Card";
+import GraphicAsset from "./GraphicAsset";
 
 export default function ModeSelect({ onSelect, onBack }: { onSelect: (mode: GameMode) => void; onBack: () => void }) {
   const descriptions: Record<GameMode, string> = {
@@ -25,6 +26,12 @@ export default function ModeSelect({ onSelect, onBack }: { onSelect: (mode: Game
         {modeOrder.map((mode) => (
           <Card key={mode} className="group flex min-h-64 flex-col justify-between transition duration-200 hover:-translate-y-1 hover:border-emerald-300/50 hover:shadow-neon">
             <div>
+              <div className="mb-4 flex h-24 items-center justify-center rounded-xl bg-slate-950/40">
+                <GraphicAsset
+                  name={mode === "quick201" ? "redDart" : mode === "bullRush" ? "bullseyePop" : mode === "officeDuel" ? "blueDart" : "bossAlert"}
+                  className={mode === "bullRush" || mode === "bossComing" ? "w-36" : "h-24"}
+                />
+              </div>
               <h3 className="text-2xl font-black">{GAME_MODES[mode].title}</h3>
               <p className="mt-3 text-slate-200">{descriptions[mode]}</p>
             </div>

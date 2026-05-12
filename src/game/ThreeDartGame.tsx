@@ -52,8 +52,9 @@ export default function ThreeDartGame({
     raf: number;
   } | null>(null);
   const aimRef = useRef({ x: BOARD_SIZE / 2, y: BOARD_SIZE / 2 });
-  const chargeRef = useRef<number | null>(null);
+  const dragRef = useRef<{ start: { x: number; y: number }; current: { x: number; y: number }; power: number } | null>(null);
   const throwSignalRef = useRef(throwSignal);
+  const [dragPower, setDragPower] = useState(0);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -101,12 +102,6 @@ export default function ThreeDartGame({
     const animate = () => {
       const current = sceneRef.current;
       if (!current) return;
-      if (chargeRef.current !== null) {
-        const elapsed = (performance.now() - chargeRef.current) / 850;
-        const wave = Math.abs(((elapsed % 2) + 2) % 2 - 1);
-        onPowerChange(wave, true);
-        current.dart.rotation.z = -0.22 + Math.sin(performance.now() / 95) * 0.025;
-      }
       current.renderer.render(current.scene, current.camera);
       current.raf = requestAnimationFrame(animate);
     };
@@ -143,6 +138,16 @@ export default function ThreeDartGame({
   const moveDart = (event: React.PointerEvent<HTMLDivElement>) => {
     if (disabled || !sceneRef.current) return;
     const point = pointFromEvent(event);
+    if (dragRef.current) {
+      const drag = dragRef.current;
+      drag.current = point;
+      const power = Math.min(1, Math.hypot(point.x - drag.start.x, point.y - drag.start.y) / 180);
+      drag.power = power;
+      setDragPower(power);
+      onPowerChange(power, true);
+      setPulledDartPosition(sceneRef.current.dart, sceneRef.current.trail, drag.start, point, power);
+      return;
+    }
     const coffee = powerUps.some((powerUp) => powerUp.type === "coffeeBoost");
     const current = aimRef.current;
     aimRef.current = coffee
@@ -154,8 +159,11 @@ export default function ThreeDartGame({
   const beginCharge = (event: React.PointerEvent<HTMLDivElement>) => {
     if (disabled || !ready) return;
     event.currentTarget.setPointerCapture(event.pointerId);
-    moveDart(event);
-    chargeRef.current = performance.now();
+    const point = pointFromEvent(event);
+    aimRef.current = point;
+    dragRef.current = { start: point, current: point, power: 0 };
+    if (sceneRef.current) setPulledDartPosition(sceneRef.current.dart, sceneRef.current.trail, point, point, 0);
+    setDragPower(0);
     onPowerChange(0, true);
   };
 
@@ -171,21 +179,24 @@ export default function ThreeDartGame({
       goldenBull
     });
     addHitMark(sceneRef.current.marks, throwResult);
-    animateDartHit(sceneRef.current.dart, sceneRef.current.trail, throwResult.x, throwResult.y);
+    addStuckDart(sceneRef.current.marks, throwResult);
+    animateDartHit(sceneRef.current.dart, sceneRef.current.trail, throwResult.x, throwResult.y, aimRef.current.x, aimRef.current.y);
     onThrow(throwResult);
   };
 
   const release = () => {
-    if (disabled || chargeRef.current === null) return;
-    const elapsed = (performance.now() - chargeRef.current) / 850;
-    chargeRef.current = null;
-    finishThrow(Math.abs(((elapsed % 2) + 2) % 2 - 1));
+    if (disabled || !dragRef.current) return;
+    const power = Math.max(0.08, dragRef.current.power);
+    dragRef.current = null;
+    setDragPower(0);
+    finishThrow(power);
   };
 
   useEffect(() => {
     if (throwSignalRef.current === throwSignal) return;
     throwSignalRef.current = throwSignal;
     if (disabled || !ready) return;
+    setDragPower(0);
     finishThrow(powerUps.some((powerUp) => powerUp.type === "focusMode") ? 0.74 : 0.7);
   }, [bonusTarget, bullOffset, comboMultiplier, disabled, goldenBull, powerUps, ready, throwSignal]);
 
@@ -200,6 +211,18 @@ export default function ThreeDartGame({
       role="application"
       aria-label="3D dart sahnesi"
     >
+      <div className={`pointer-events-none absolute left-5 right-5 top-5 rounded-2xl border border-cyan-300/30 bg-slate-950/60 p-3 shadow-[0_0_26px_rgba(56,189,248,.22)] transition-opacity ${dragPower > 0 ? "opacity-100" : "opacity-70"}`}>
+        <div className="mb-2 flex items-center justify-between text-xs font-black uppercase text-cyan-100">
+          <span>Geri çekme gücü</span>
+          <span>{Math.round(dragPower * 100)}%</span>
+        </div>
+        <div className="h-3 overflow-hidden rounded-full bg-slate-900">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-amber-300 to-rose-400 shadow-[0_0_18px_rgba(251,191,36,.6)]"
+            style={{ width: `${Math.round(dragPower * 100)}%` }}
+          />
+        </div>
+      </div>
       <div className="pointer-events-none absolute inset-x-5 bottom-5 h-1 overflow-hidden rounded-full bg-white/10">
         <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-yellow-300 to-pink-400" />
       </div>
@@ -357,13 +380,28 @@ function setDartPosition(dart: THREE.Group, trail: THREE.Line, x: number, y: num
   positions.needsUpdate = true;
 }
 
-function animateDartHit(dart: THREE.Group, trail: THREE.Line, x: number, y: number) {
+function setPulledDartPosition(dart: THREE.Group, trail: THREE.Line, aim: { x: number; y: number }, pull: { x: number; y: number }, power: number) {
+  const pullX = aim.x + (pull.x - aim.x) * 0.9;
+  const pullY = aim.y + (pull.y - aim.y) * 0.9;
+  const point = boardToWorld(pullX, pullY);
+  const target = boardToWorld(aim.x, aim.y);
+  const angle = Math.atan2(target.y - point.y, target.x - point.x);
+  dart.position.set(point.x, point.y, 1.05 + power * 1.55);
+  dart.rotation.z = angle - Math.PI / 2;
+  dart.rotation.x = 0.48 + power * 0.18;
+  const positions = trail.geometry.attributes.position as THREE.BufferAttribute;
+  positions.setXYZ(0, point.x, point.y, dart.position.z - 0.14);
+  positions.setXYZ(1, target.x, target.y, 0.18);
+  positions.needsUpdate = true;
+}
+
+function animateDartHit(dart: THREE.Group, trail: THREE.Line, x: number, y: number, resetX: number, resetY: number) {
   const point = boardToWorld(x, y);
   dart.position.set(point.x, point.y, 0.34);
   dart.scale.setScalar(0.92);
   window.setTimeout(() => {
     dart.scale.setScalar(1);
-    setDartPosition(dart, trail, x, y, 1.35);
+    setDartPosition(dart, trail, resetX, resetY, 1.35);
   }, 180);
 }
 
@@ -376,6 +414,17 @@ function addHitMark(marks: THREE.Group, throwResult: DartThrow) {
   mark.position.set(point.x, point.y, 0.24);
   marks.add(mark);
   while (marks.children.length > 18) marks.remove(marks.children[0]);
+}
+
+function addStuckDart(marks: THREE.Group, throwResult: DartThrow) {
+  const point = boardToWorld(throwResult.x, throwResult.y);
+  const stuck = createDartMesh();
+  stuck.position.set(point.x, point.y, 0.38);
+  stuck.rotation.x = 0.72;
+  stuck.rotation.z = -0.18 + (Math.random() - 0.5) * 0.18;
+  stuck.scale.setScalar(0.64);
+  marks.add(stuck);
+  while (marks.children.length > 30) marks.remove(marks.children[0]);
 }
 
 function disposeObject(object: THREE.Object3D) {

@@ -18,6 +18,8 @@ npm run dev
 - LocalStorage tabanlı skor tablosu ve ayarlar
 - PWA manifest ve service worker
 - Avatar/oyuncu profilleri
+- Ekli grafik setinden sprite mapping ile logo, buton, skor paneli ve oyun ikonları
+- Basılı tutup geriye çekerek güç belirleme ve 3D saplanan dart görseli
 - Responsive, touch ve mouse destekli Türkçe arayüz
 
 ## Yayınlama

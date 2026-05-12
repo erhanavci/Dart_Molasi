@@ -1,5 +1,5 @@
 const CACHE_NAME = "dart-molasi-v2";
-const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icons/icon.svg"];
+const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icons/icon.svg", "/assets/dart-molasi-graphics.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));

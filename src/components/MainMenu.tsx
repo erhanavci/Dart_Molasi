@@ -1,6 +1,7 @@
 import { BookOpen, Play, Settings, Trophy, Users } from "lucide-react";
 import Button from "./Button";
 import Card from "./Card";
+import GraphicAsset from "./GraphicAsset";
 
 interface MainMenuProps {
   onStart: () => void;
@@ -25,17 +26,18 @@ export default function MainMenu({ onStart, onModes, onLeaderboard, onHowTo, onS
         <div className="space-y-7">
           <div>
             <p className="mb-3 text-sm font-black uppercase tracking-[0.28em] text-emerald-300">10 dakikalık ofis rekabeti</p>
-            <h1 className="text-5xl font-black leading-none text-white sm:text-7xl lg:text-8xl">Dart Molası</h1>
+            <GraphicAsset name="logo" label="Dart Molası" className="w-full max-w-[390px] drop-shadow-[0_0_24px_rgba(56,189,248,.45)]" />
             <p className="mt-5 max-w-2xl text-lg text-slate-200">
-              Kahveni al, nişangahı sabitle, parlayan hedefi yakala. Ofisteki en hızlı mola şampiyonluğu burada başlıyor.
+              Kahveni al, dartı geriye çek, parlayan hedefi yakala. Ofisteki en hızlı mola şampiyonluğu burada başlıyor.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            {items.slice(0, 2).map((item) => (
-              <Button key={item.label} variant={item.variant} icon={item.icon} onClick={item.onClick}>
-                {item.label}
-              </Button>
-            ))}
+            <button onClick={onStart} className="transition hover:scale-105" aria-label="Oyuna Başla">
+              <GraphicAsset name="playButton" className="w-48" />
+            </button>
+            <button onClick={onModes} className="transition hover:scale-105" aria-label="Mod Seç">
+              <GraphicAsset name="modeButton" className="w-48" />
+            </button>
           </div>
         </div>
         <Card className="grid gap-3">
@@ -49,9 +51,9 @@ export default function MainMenu({ onStart, onModes, onLeaderboard, onHowTo, onS
             </Button>
           ))}
           <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs font-bold text-slate-300">
-            <span className="rounded-lg bg-white/10 p-3">Kombo</span>
-            <span className="rounded-lg bg-white/10 p-3">Altın Bull</span>
-            <span className="rounded-lg bg-white/10 p-3">Post-it</span>
+            <span className="grid place-items-center rounded-lg bg-white/10 p-2"><GraphicAsset name="combo2" className="w-24" /></span>
+            <span className="grid place-items-center rounded-lg bg-white/10 p-2"><GraphicAsset name="coinGold" className="w-14" /></span>
+            <span className="grid place-items-center rounded-lg bg-white/10 p-2"><GraphicAsset name="postit" className="w-14" /></span>
           </div>
         </Card>
       </div>
