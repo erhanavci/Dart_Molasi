@@ -52,7 +52,7 @@ export default function GameHUD({
         <div className="rounded-xl bg-slate-950/40 p-3">
           <div className="text-xs font-black uppercase text-slate-400">Skor Paneli</div>
           <div className="mt-1 flex items-center gap-3">
-            <GraphicAsset name="scorePanel" className="w-28 shrink-0" />
+            <GraphicAsset name="diamond" className="w-14 shrink-0" />
             <div>
               <div className="text-3xl font-black text-cyan-100">{score}</div>
               <div className="text-xs font-bold text-slate-400">{modeTitle}</div>
@@ -93,7 +93,7 @@ export default function GameHUD({
       </div>
       {showBossAlarm && (
         <div className="rounded-xl border border-rose-400/30 bg-rose-950/25 p-3">
-          <GraphicAsset name="bossBar" className="mb-2 w-full max-w-xs" />
+          <GraphicAsset name="bossAlert" className="mb-2 w-44" />
           <div className="mb-2 flex justify-between text-sm font-black">
             <span>Patron Alarmı</span>
             <span>{Math.round(bossAlarm)}%</span>

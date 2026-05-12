@@ -10,10 +10,10 @@ export const resolveDartLanding = (
 ) => {
   const focus = powerUps.some((powerUp) => powerUp.type === "focusMode");
   const lucky = powerUps.some((powerUp) => powerUp.type === "luckyPostIt");
-  const powerError = Math.abs(power - 0.72);
-  const spread = (focus ? 9 : 18) + powerError * 44;
+  const stablePower = clamp(power, 0, 1);
+  const spread = (focus ? 7 : 13) + (1 - stablePower) * (focus ? 18 : 34);
   let x = aimX + randomBetween(-spread, spread);
-  let y = aimY + randomBetween(-spread, spread);
+  let y = aimY + randomBetween(-spread, spread) + (1 - stablePower) * 28;
 
   if (lucky) {
     const center = boardSize / 2;

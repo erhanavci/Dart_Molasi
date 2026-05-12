@@ -53,8 +53,14 @@ export default function ThreeDartGame({
   } | null>(null);
   const aimRef = useRef({ x: BOARD_SIZE / 2, y: BOARD_SIZE / 2 });
   const dragRef = useRef<{ start: { x: number; y: number }; current: { x: number; y: number }; power: number } | null>(null);
+  const isFlyingRef = useRef(false);
   const throwSignalRef = useRef(throwSignal);
-  const [dragPower, setDragPower] = useState(0);
+  const [dragUi, setDragUi] = useState<{ active: boolean; start: { x: number; y: number }; current: { x: number; y: number }; power: number }>({
+    active: false,
+    start: { x: BOARD_SIZE / 2, y: BOARD_SIZE / 2 },
+    current: { x: BOARD_SIZE / 2, y: BOARD_SIZE / 2 },
+    power: 0
+  });
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -136,14 +142,14 @@ export default function ThreeDartGame({
   };
 
   const moveDart = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (disabled || !sceneRef.current) return;
+    if (disabled || isFlyingRef.current || !sceneRef.current) return;
     const point = pointFromEvent(event);
     if (dragRef.current) {
       const drag = dragRef.current;
       drag.current = point;
       const power = Math.min(1, Math.hypot(point.x - drag.start.x, point.y - drag.start.y) / 180);
       drag.power = power;
-      setDragPower(power);
+      setDragUi({ active: true, start: drag.start, current: point, power });
       onPowerChange(power, true);
       setPulledDartPosition(sceneRef.current.dart, sceneRef.current.trail, drag.start, point, power);
       return;
@@ -157,18 +163,19 @@ export default function ThreeDartGame({
   };
 
   const beginCharge = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (disabled || !ready) return;
+    if (disabled || !ready || isFlyingRef.current) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     const point = pointFromEvent(event);
     aimRef.current = point;
     dragRef.current = { start: point, current: point, power: 0 };
     if (sceneRef.current) setPulledDartPosition(sceneRef.current.dart, sceneRef.current.trail, point, point, 0);
-    setDragPower(0);
+    setDragUi({ active: true, start: point, current: point, power: 0 });
     onPowerChange(0, true);
   };
 
   const finishThrow = (powerValue: number) => {
-    if (!sceneRef.current) return;
+    if (!sceneRef.current || isFlyingRef.current) return;
+    isFlyingRef.current = true;
     onPowerChange(powerValue, false);
     const landing = resolveDartLanding(aimRef.current.x, aimRef.current.y, powerValue, BOARD_SIZE, powerUps);
     const throwResult = calculateThrow(landing.x, landing.y, {
@@ -178,27 +185,36 @@ export default function ThreeDartGame({
       bullOffset,
       goldenBull
     });
-    addHitMark(sceneRef.current.marks, throwResult);
-    addStuckDart(sceneRef.current.marks, throwResult);
-    animateDartHit(sceneRef.current.dart, sceneRef.current.trail, throwResult.x, throwResult.y, aimRef.current.x, aimRef.current.y);
-    onThrow(throwResult);
+    animateDartHit(sceneRef.current.dart, sceneRef.current.trail, throwResult.x, throwResult.y, aimRef.current.x, aimRef.current.y, () => {
+      if (!sceneRef.current) return;
+      addHitMark(sceneRef.current.marks, throwResult);
+      addStuckDart(sceneRef.current.marks, throwResult);
+      isFlyingRef.current = false;
+      onThrow(throwResult);
+    });
   };
 
   const release = () => {
-    if (disabled || !dragRef.current) return;
+    if (disabled || isFlyingRef.current || !dragRef.current) return;
     const power = Math.max(0.08, dragRef.current.power);
     dragRef.current = null;
-    setDragPower(0);
+    setDragUi((current) => ({ ...current, active: false, power: 0 }));
     finishThrow(power);
   };
 
   useEffect(() => {
     if (throwSignalRef.current === throwSignal) return;
     throwSignalRef.current = throwSignal;
-    if (disabled || !ready) return;
-    setDragPower(0);
+    if (disabled || !ready || isFlyingRef.current) return;
+    setDragUi((current) => ({ ...current, active: false, power: 0 }));
     finishThrow(powerUps.some((powerUp) => powerUp.type === "focusMode") ? 0.74 : 0.7);
   }, [bonusTarget, bullOffset, comboMultiplier, disabled, goldenBull, powerUps, ready, throwSignal]);
+
+  const dragPower = dragUi.power;
+  const aimLeft = `${(dragUi.start.x / BOARD_SIZE) * 100}%`;
+  const aimTop = `${(dragUi.start.y / BOARD_SIZE) * 100}%`;
+  const pullLeft = `${(dragUi.current.x / BOARD_SIZE) * 100}%`;
+  const pullTop = `${(dragUi.current.y / BOARD_SIZE) * 100}%`;
 
   return (
     <div
@@ -211,6 +227,33 @@ export default function ThreeDartGame({
       role="application"
       aria-label="3D dart sahnesi"
     >
+      <div className="pointer-events-none absolute inset-x-4 bottom-8 z-10 rounded-xl border border-white/10 bg-slate-950/55 px-3 py-2 text-center text-xs font-black uppercase tracking-[0.14em] text-cyan-100">
+        Hedefe bas, dartı geriye çek, bırak
+      </div>
+      {dragUi.active && (
+        <>
+          <div
+            className="pointer-events-none absolute z-20 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-cyan-200 bg-cyan-300/20 shadow-[0_0_22px_rgba(103,232,249,.7)]"
+            style={{ left: aimLeft, top: aimTop }}
+          />
+          <div
+            className="pointer-events-none absolute z-20 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-300 shadow-[0_0_22px_rgba(251,191,36,.75)]"
+            style={{ left: pullLeft, top: pullTop }}
+          />
+          <svg className="pointer-events-none absolute inset-0 z-10 h-full w-full">
+            <line
+              x1={`${(dragUi.start.x / BOARD_SIZE) * 100}%`}
+              y1={`${(dragUi.start.y / BOARD_SIZE) * 100}%`}
+              x2={`${(dragUi.current.x / BOARD_SIZE) * 100}%`}
+              y2={`${(dragUi.current.y / BOARD_SIZE) * 100}%`}
+              stroke="rgba(251,191,36,.9)"
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeDasharray="10 8"
+            />
+          </svg>
+        </>
+      )}
       <div className={`pointer-events-none absolute left-5 right-5 top-5 rounded-2xl border border-cyan-300/30 bg-slate-950/60 p-3 shadow-[0_0_26px_rgba(56,189,248,.22)] transition-opacity ${dragPower > 0 ? "opacity-100" : "opacity-70"}`}>
         <div className="mb-2 flex items-center justify-between text-xs font-black uppercase text-cyan-100">
           <span>Geri çekme gücü</span>
@@ -395,14 +438,34 @@ function setPulledDartPosition(dart: THREE.Group, trail: THREE.Line, aim: { x: n
   positions.needsUpdate = true;
 }
 
-function animateDartHit(dart: THREE.Group, trail: THREE.Line, x: number, y: number, resetX: number, resetY: number) {
+function animateDartHit(dart: THREE.Group, trail: THREE.Line, x: number, y: number, resetX: number, resetY: number, onDone: () => void) {
+  const start = dart.position.clone();
   const point = boardToWorld(x, y);
-  dart.position.set(point.x, point.y, 0.34);
-  dart.scale.setScalar(0.92);
-  window.setTimeout(() => {
+  const end = new THREE.Vector3(point.x, point.y, 0.34);
+  const startedAt = performance.now();
+  const duration = 210;
+
+  const tick = () => {
+    const progress = Math.min(1, (performance.now() - startedAt) / duration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    dart.position.lerpVectors(start, end, eased);
+    dart.scale.setScalar(1 - eased * 0.08);
+    const positions = trail.geometry.attributes.position as THREE.BufferAttribute;
+    positions.setXYZ(0, dart.position.x, dart.position.y, dart.position.z);
+    positions.setXYZ(1, start.x, start.y, start.z + 0.2);
+    positions.needsUpdate = true;
+
+    if (progress < 1) {
+      requestAnimationFrame(tick);
+      return;
+    }
+
     dart.scale.setScalar(1);
     setDartPosition(dart, trail, resetX, resetY, 1.35);
-  }, 180);
+    onDone();
+  };
+
+  requestAnimationFrame(tick);
 }
 
 function addHitMark(marks: THREE.Group, throwResult: DartThrow) {
