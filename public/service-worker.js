@@ -4,14 +4,14 @@ const APP_SHELL = [
   "/index.html",
   "/manifest.webmanifest",
   "/icons/icon.svg",
-  "/assets/dart-molasi-graphics.png",
-  "/assets/ui/logo.png",
-  "/assets/ui/play-button.png",
-  "/assets/ui/mode-button.png",
-  "/assets/ui/score-panel.png",
-  "/assets/ui/combo2.png",
-  "/assets/ui/combo3.png",
-  "/assets/ui/boss-bar.png"
+  "/assets/game-ui/logo.png",
+  "/assets/game-ui/board.png",
+  "/assets/game-ui/dart-red.png",
+  "/assets/game-ui/btn-play.png",
+  "/assets/game-ui/btn-mode.png",
+  "/assets/game-ui/combo2.png",
+  "/assets/game-ui/combo3.png",
+  "/assets/game-ui/boss-alert.png"
 ];
 
 self.addEventListener("install", (event) => {
