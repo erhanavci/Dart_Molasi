@@ -7,11 +7,19 @@ const APP_SHELL = [
   "/assets/game-ui/logo.png",
   "/assets/game-ui/board.png",
   "/assets/game-ui/dart-red.png",
+  "/assets/game-ui/dart-blue.png",
+  "/assets/game-ui/dart-green.png",
   "/assets/game-ui/btn-play.png",
   "/assets/game-ui/btn-mode.png",
+  "/assets/game-ui/btn-replay.png",
+  "/assets/game-ui/btn-home.png",
   "/assets/game-ui/combo2.png",
   "/assets/game-ui/combo3.png",
-  "/assets/game-ui/boss-alert.png"
+  "/assets/game-ui/boss-alert.png",
+  "/assets/game-ui/coffee.png",
+  "/assets/game-ui/focus.png",
+  "/assets/game-ui/meeting.png",
+  "/assets/game-ui/postit.png"
 ];
 
 self.addEventListener("install", (event) => {
