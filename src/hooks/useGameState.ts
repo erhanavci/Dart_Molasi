@@ -36,6 +36,7 @@ export function useGameState({ mode, playerName, playerProfiles, onSaveScore }: 
   );
   const [activePlayer, setActivePlayer] = useState(0);
   const [turnDarts, setTurnDarts] = useState(0);
+  const [turnKey, setTurnKey] = useState(0);
   const [round, setRound] = useState(1);
   const [phase, setPhase] = useState<GamePhase>("playing");
   const [timeLeft, setTimeLeft] = useState(config.seconds ?? 0);
@@ -213,6 +214,7 @@ export function useGameState({ mode, playerName, playerProfiles, onSaveScore }: 
         if (activePlayer === 0) {
           setActivePlayer(1);
           setTurnDarts(0);
+          setTurnKey((value) => value + 1);
           setPhase("playing");
           addEvent("Oyuncu 2 sıra sende!", "combo");
           return;
@@ -229,6 +231,7 @@ export function useGameState({ mode, playerName, playerProfiles, onSaveScore }: 
           setSuddenDistances([undefined, undefined]);
           setActivePlayer(0);
           setTurnDarts(0);
+          setTurnKey((value) => value + 1);
           setPhase("playing");
           addEvent("Ani Ölüm!", "warning");
           return;
@@ -239,6 +242,7 @@ export function useGameState({ mode, playerName, playerProfiles, onSaveScore }: 
       addEvent(nextPlayer === 0 ? "Oyuncu 1 sıra sende!" : "Oyuncu 2 sıra sende!", "combo");
     }
     setTurnDarts(0);
+    setTurnKey((value) => value + 1);
     setPhase("playing");
   }, [activePlayer, addEvent, config.rounds, finishGame, mode, players, round, suddenDeath]);
 
@@ -263,6 +267,7 @@ export function useGameState({ mode, playerName, playerProfiles, onSaveScore }: 
     players,
     activePlayer,
     turnDarts,
+    turnKey,
     round,
     suddenDeath,
     phase,

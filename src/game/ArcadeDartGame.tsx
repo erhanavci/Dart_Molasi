@@ -11,6 +11,8 @@ interface ArcadeDartGameProps {
   powerUps: ActivePowerUp[];
   disabled?: boolean;
   throwSignal: number;
+  clearSignal: number;
+  dartVariant: "red" | "blue" | "green";
   onThrow: (throwResult: DartThrow) => void;
   onPowerChange: (power: number, charging: boolean) => void;
 }
@@ -26,6 +28,7 @@ interface StuckDart {
   y: number;
   angle: number;
   bonus: boolean;
+  variant: "red" | "blue" | "green";
 }
 
 interface HitEffect {
@@ -48,6 +51,8 @@ export default function ArcadeDartGame({
   powerUps,
   disabled,
   throwSignal,
+  clearSignal,
+  dartVariant,
   onThrow,
   onPowerChange
 }: ArcadeDartGameProps) {
@@ -55,6 +60,7 @@ export default function ArcadeDartGame({
   const dragRef = useRef<{ aim: Point; pull: Point; power: number } | null>(null);
   const aimRef = useRef<Point>({ x: BOARD_SIZE / 2, y: BOARD_SIZE / 2 });
   const throwSignalRef = useRef(throwSignal);
+  const clearSignalRef = useRef(clearSignal);
   const flyingRef = useRef(false);
   const [drag, setDrag] = useState<{ active: boolean; aim: Point; pull: Point; power: number }>({
     active: false,
@@ -142,7 +148,7 @@ export default function ArcadeDartGame({
       const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       setStuckDarts((current) => [
         ...current.slice(-8),
-        { id, x: throwResult.x, y: throwResult.y, angle, bonus: throwResult.isBonusHit || throwResult.isBullseye }
+        { id, x: throwResult.x, y: throwResult.y, angle, bonus: throwResult.isBonusHit || throwResult.isBullseye, variant: dartVariant }
       ]);
       const effectSrc = throwResult.isBullseye
         ? "bullseye-pop"
@@ -173,6 +179,16 @@ export default function ArcadeDartGame({
     if (disabled || flyingRef.current) return;
     completeThrow(powerUps.some((powerUp) => powerUp.type === "focusMode") ? 0.78 : 0.68);
   }, [bonusTarget, comboMultiplier, disabled, goldenBull, powerUps, throwSignal]);
+
+  useEffect(() => {
+    if (clearSignalRef.current === clearSignal) return;
+    clearSignalRef.current = clearSignal;
+    setStuckDarts([]);
+    setEffects([]);
+    dragRef.current = null;
+    flyingRef.current = false;
+    setDrag((current) => ({ ...current, active: false, power: 0 }));
+  }, [clearSignal]);
 
   const bullStyle = {
     left: `${50 + (bullOffset.x / BOARD_SIZE) * 100}%`,
@@ -230,7 +246,7 @@ export default function ArcadeDartGame({
           className={`pointer-events-none absolute z-40 h-[24%] -translate-x-1/2 -translate-y-[88%] object-contain drop-shadow-[0_12px_14px_rgba(0,0,0,.55)] ${
             item.bonus ? "brightness-125 saturate-150" : ""
           }`}
-          src={`${ASSET}/dart-red.png`}
+          src={`${ASSET}/dart-${item.variant}.png`}
           alt=""
           style={{ left: `${(item.x / BOARD_SIZE) * 100}%`, top: `${(item.y / BOARD_SIZE) * 100}%`, transform: `translate(-50%, -88%) rotate(${item.angle}deg)` }}
           draggable={false}
@@ -252,7 +268,7 @@ export default function ArcadeDartGame({
         className={`pointer-events-none absolute z-[60] h-[32%] -translate-x-1/2 -translate-y-[86%] object-contain drop-shadow-[0_18px_18px_rgba(0,0,0,.6)] ${
           dart.flying ? "transition-all duration-[250ms] ease-out" : "transition-transform duration-75"
         }`}
-        src={`${ASSET}/dart-red.png`}
+        src={`${ASSET}/dart-${dartVariant}.png`}
         alt=""
         style={{ left: `${(dart.x / BOARD_SIZE) * 100}%`, top: `${(dart.y / BOARD_SIZE) * 100}%`, transform: `translate(-50%, -86%) rotate(${dart.angle}deg)` }}
         draggable={false}

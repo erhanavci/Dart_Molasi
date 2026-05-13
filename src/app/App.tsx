@@ -139,6 +139,7 @@ function GameView({
   const game = useGameState({ mode, playerName: settingsPlayerName, playerProfiles, onSaveScore });
   const currentPlayer = game.players[game.activePlayer];
   const dartsLeft = Math.max(0, (game.suddenDeath ? 1 : GAME_MODES[mode].dartsPerTurn) - game.turnDarts);
+  const dartVariant = (mode === "officeDuel" ? (game.activePlayer === 0 ? "blue" : "green") : "red") as "red" | "blue" | "green";
 
   useEffect(() => {
     if (game.phase === "finished" && game.result) {
@@ -180,6 +181,8 @@ function GameView({
             powerUps={game.powerUps}
             disabled={game.phase !== "playing"}
             throwSignal={throwSignal}
+            clearSignal={game.turnKey}
+            dartVariant={dartVariant}
             onThrow={game.handleThrow}
             onPowerChange={onPowerChange}
           />

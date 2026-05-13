@@ -1,4 +1,4 @@
-import { Send, RotateCcw, StepForward, Home } from "lucide-react";
+import { StepForward } from "lucide-react";
 import type { ActivePowerUp, PlayerState } from "../types/game";
 import { formatTime } from "../utils/formatters";
 import Button from "./Button";
@@ -88,7 +88,13 @@ export default function GameHUD({
         <div className="rounded-xl bg-white/10 p-3">
           <div className="text-xs font-black uppercase text-slate-300">Kombo / Bonus</div>
           <div className="mt-1 font-black text-amber-200">{combo > 1 ? `Kombo x${combo}` : bonusText ?? "Bonus Hedef!"}</div>
-          <div className="text-sm text-slate-300">{activePowerUps.map((item) => item.label).join(" · ") || "Aktif bonus yok"}</div>
+          <div className="mt-2 flex min-h-12 items-center gap-2">
+            {activePowerUps.length > 0 ? (
+              activePowerUps.map((item) => <GraphicAsset key={`${item.type}-${item.expiresAt ?? "instant"}`} name={powerUpGraphics[item.type]} className="h-12 w-12" label={item.label} />)
+            ) : (
+              <span className="text-sm text-slate-300">Aktif bonus yok</span>
+            )}
+          </div>
         </div>
       </div>
       {showBossAlarm && (
@@ -103,11 +109,19 @@ export default function GameHUD({
           </div>
         </div>
       )}
-      <div className="flex flex-wrap gap-2">
-        <Button icon={<Send size={19} />} onClick={onThrowButton} disabled={phase !== "playing"} className="w-12 px-0" aria-label="At" title="At" />
-        <Button variant="secondary" icon={<StepForward size={19} />} onClick={onNextTurn} disabled={phase !== "betweenTurns"} className="w-12 px-0" aria-label="Sonraki Tur" title="Sonraki Tur" />
-        <Button variant="secondary" icon={<RotateCcw size={19} />} onClick={onRestart} className="w-12 px-0" aria-label="Tekrar Oyna" title="Tekrar Oyna" />
-        <Button variant="ghost" icon={<Home size={19} />} onClick={onMenu} className="w-12 px-0" aria-label="Menüye Dön" title="Menüye Dön" />
+      <div className="grid gap-2 sm:grid-cols-2">
+        <button type="button" onClick={onThrowButton} disabled={phase !== "playing"} className="transition enabled:hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-40" aria-label="At">
+          <GraphicAsset name="playButton" className="w-full" />
+        </button>
+        <Button variant="secondary" icon={<StepForward size={19} />} onClick={onNextTurn} disabled={phase !== "betweenTurns"} className="min-h-16 text-base">
+          Sonraki Tur
+        </Button>
+        <button type="button" onClick={onRestart} className="transition hover:scale-[1.03]" aria-label="Tekrar Oyna">
+          <GraphicAsset name="replayButton" className="w-full" />
+        </button>
+        <button type="button" onClick={onMenu} className="transition hover:scale-[1.03]" aria-label="Menüye Dön">
+          <GraphicAsset name="homeButton" className="w-full" />
+        </button>
       </div>
     </Card>
   );
@@ -121,3 +135,10 @@ function Metric({ label, value, pulse }: { label: string; value: string | number
     </div>
   );
 }
+
+const powerUpGraphics: Record<ActivePowerUp["type"], "coffee" | "focus" | "meeting" | "postit"> = {
+  coffeeBoost: "coffee",
+  focusMode: "focus",
+  meetingCancelled: "meeting",
+  luckyPostIt: "postit"
+};
